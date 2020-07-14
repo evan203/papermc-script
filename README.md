@@ -4,4 +4,4 @@
 2. `wget https://raw.githubusercontent.com/evan203/papermc-script/master/start.sh`  
 
 ### Usage  
-Running `./start.sh` will download the latest version of papermc in the minecraft version you specify. If you already have the most updated server jar, nothing will change. Then, it will sart a server with optimized JVM flags.  
+Running `./start.sh` will download the latest version of papermc in the minecraft version you specify. If you already have the most updated server jar, nothing will change. You will have to specify how much ram to allocate to the server. Then, it will sart a server with optimized JVM flags.  
