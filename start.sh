@@ -7,9 +7,9 @@ echo "Minecraft Version to Download: "
 read mcversion
 echo "Downloading papermc for version $mcversion"
 
-#creates temp directory with name of the PID
+# creates temp directory with name of the PID
 tmpDir="/tmp/$$"
-# Check if temp directory exists first
+# check if temp directory exists first
 if [ ! -d "$tmpDir" ] 
 then
 	mkdir $tmpDir
@@ -17,7 +17,7 @@ fi
 
 # opens the temporary directory to download the latest server .jar for the user-specified version
 cd $tmpDir
-curl -JLO https://papermc.io/api/v1/paper/$mcversion/latest/download
+curl -JLO https://papermc.io/api/v1/paper/$mcversion/latest/download # https://paper.readthedocs.io/en/latest/site/api.html
 paperver=`ls -1`
 
 # check if .jar file just downloaded exists in server directory
