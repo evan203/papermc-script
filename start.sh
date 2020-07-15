@@ -17,9 +17,9 @@ fi
 
 # get latest build number of PaperMC
 cd $tmpDir
-latestPre=`curl -s https://papermc.io/api/v1/paper/$mcversion/latest | tr -d -c 0-9.` # json of latest build number of mcversion to only have numbers 0 through 9 and .
-latest="${latestPre//$mcversion/}" # removes mcversion from that getting latest build number of paper
-
+#latestPre=`curl -s https://papermc.io/api/v1/paper/$mcversion/latest | tr -d -c 0-9.` # json of latest build number of mcversion to only have numbers 0 through 9 and .
+#latest="${latestPre//$mcversion/}" # removes mcversion from that getting latest build number of paper
+latest=`curl -s https://papermc.io/api/v1/paper/$mcversion/latest | jq '.build' | sed -e 's/"//g'`
 
 ## check if local server is up to date
 newFile=$pwdRoot/paper-$latest.jar
