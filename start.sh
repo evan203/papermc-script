@@ -3,7 +3,7 @@
 # 	file or the directory you intend to install a minecraft server.
 
 
-# function for translating start_config.yml's data into paramaters in this script
+# function for translating start_config.yml's data into paramaters in this script (credit to Stephan Farestam)
 function parse_yaml {
    local prefix=$2
    local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
