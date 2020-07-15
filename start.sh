@@ -55,7 +55,7 @@ if [ ! -x "$(command -v jq)" ] || [ ! -x "$(command -v curl)" ]; then
     elif [ -x "$(command -v zypper)" ];  then sudo zypper install $packagesNeeded
     elif [ -x "$(command -v pacman)" ];  then sudo pacman -S $packagesNeeded
     elif [ -x "$(command -v yum)" ];  then sudo yum install epel-release -y; sudo yum install $packagesNeeded -y
-    else echo "FAILED TO INSTALL PACKAGE: Package manager not found. You must manually install: $packagesNeeded".; fi
+    else echo "FAILED TO INSTALL PACKAGE: Package manager not found. You must manually install: $packagesNeeded"; fi
 else echo "dependencies are installed."
 fi
 echo "Checking to see if you have the latest build of PaperMC for Minecraft version $mcversion..."
