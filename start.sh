@@ -2,9 +2,46 @@
 # This script is intended to be run in the directory with your server .jar 
 # 	file or the directory you intend to install a minecraft server.
 
+
+# function for translating start_config.yml's data into paramaters in this script
+function parse_yaml {
+   local prefix=$2
+   local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
+   sed -ne "s|^\($s\):|\1|" \
+        -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
+        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
+   awk -F$fs '{
+      indent = length($1)/2;
+      vname[indent] = $2;
+      for (i in vname) {if (i > indent) {delete vname[i]}}
+      if (length($3) > 0) {
+         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+         printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
+      }
+   }'
+}
 pwdRoot=`pwd`
-echo "Minecraft Version: "
-read mcversion
+
+startConfig=$pwdRoot/start_config.yml
+if [ -f "$startConfig" ]; then
+    echo "$startConfig exists."
+else 
+    echo "$startConfig does not exist. Creating one."
+    touch $startConfig
+    echo "## Config for start.sh"  >> $startConfig ; echo "mcver: 'ask'"  >> $startConfig ; echo "mcram: 'ask'" >> $startConfig
+fi
+
+# translate start_config.yml's data into paramaters in this script
+eval $(parse_yaml start_config.yml)
+
+if [ $mcver == "ask" ]; then
+	echo "Minecraft Version: "
+	read mcversion
+else
+	mcversion=$mcver
+fi
+
+
 echo "Checking to see if you have the latest build of PaperMC for Minecraft version $mcversion..."
 
 # creates temp directory with name of the PID
@@ -41,8 +78,15 @@ fi
 rm -rf $tmpDir
 
 # run the minecraft server
-echo "GB of ram to allocate for server: "
-read mem
+if [ $mcram == "ask" ]; then
+	echo "GB of ram to allocate for server: "
+	read mem
+else
+	mem=$mcram
+fi
+
+
+
 echo "Minecraft server is starting!"
 
 OPTS="-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true"
