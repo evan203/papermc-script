@@ -12,6 +12,8 @@ Then, it will sart a server with optimized JVM flags.
 If you would like to specify default values for the default minecraft version and how much memory to dedicate, you can modify the
 `server_config.yml` file. Here is an example of what it would look like if you want it to default to minecraft version 1.16.1
 and have 4GB of memory every time you run the start script:
-```## Config for start.sh
+```yaml
+## Config for start.sh
 mcver: '1.16.1'
-mcram: '4'```
+mcram: '4'
+```
