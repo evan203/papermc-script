@@ -1,8 +1,8 @@
 #!/bin/bash
 # +————————————————————————————————————————+
 # |   paperMC start script - by Evan203    |
-# |             version 2.1                |
-# |         Updated July 15, 2020          |
+# |             version 2.2                |
+# |         Updated July 17, 2020          |
 # +————————————————————————————————————————+
 #
 
@@ -24,27 +24,6 @@ function parse_yaml {
    }'
 }
 
-# make sure start_config.yml exists. if not, create one with default values.
-pwdRoot="$(pwd)"
-startConfig=$pwdRoot/start_config.yml
-if [ -f "$startConfig" ]; then
-    echo "$startConfig exists."
-else 
-    echo "$startConfig does not exist. Creating one."
-    touch $startConfig
-    echo "## Config for start.sh"  >> $startConfig ; echo "mcver: 'ask'"  >> $startConfig ; echo "mcram: 'ask'" >> $startConfig
-fi
-
-# translate start_config.yml's data into paramaters in this script
-eval $(parse_yaml start_config.yml)
-
-if [ $mcver == "ask" ]; then
-	echo "Minecraft Version: "
-	read mcversion
-else
-	mcversion=$mcver
-fi
-
 # check dependencies
 if [ ! -x "$(command -v jq)" ] || [ ! -x "$(command -v curl)" ]; then 
     packagesNeeded='curl jq'
@@ -58,7 +37,31 @@ if [ ! -x "$(command -v jq)" ] || [ ! -x "$(command -v curl)" ]; then
     else echo "FAILED TO INSTALL PACKAGE: Package manager not found. You must manually install: $packagesNeeded"; fi
 else echo "dependencies are installed."
 fi
-echo "Checking to see if you have the latest build of PaperMC for Minecraft version $mcversion..."
+
+# make sure start_config.yml exists. if not, create one with default values.
+pwdRoot="$(pwd)"
+startConfig=$pwdRoot/start_config.yml
+if [ -f "$startConfig" ]; then
+    echo "$startConfig exists."
+else 
+    echo "$startConfig does not exist. Creating one."
+    touch $startConfig
+    echo "## Config for start.sh"  >> $startConfig ; echo "project: 'paper'"  >> $startConfig ; echo "mcver: 'ask'" >> $startConfig ; echo "mcram: 'ask'"  >> $startConfig 
+fi
+
+
+# translate start_config.yml's data into paramaters in this script
+eval $(parse_yaml start_config.yml)
+
+
+if [ $mcver == "ask" ]; then
+	echo "Minecraft Version: "
+	read mcversion
+else
+	mcversion=$mcver
+fi
+
+echo "Checking to see if you have the latest build of $project for Minecraft version $mcversion..."
 
 # creates temp directory with name of the PID
 tmpDir="/tmp/$$"
@@ -70,18 +73,18 @@ fi
 
 # get latest build number of PaperMC
 cd $tmpDir
-latest="$(curl -s https://papermc.io/api/v1/paper/$mcversion/latest | jq '.build' | sed -e 's/"//g')" # gets latest build number from .json, removes " from output
+latest="$(curl -s https://papermc.io/api/v1/$project/$mcversion/latest | jq '.build' | sed -e 's/"//g')" # gets latest build number from .json, removes " from output
 
 ## check if local server is up to date
-newFile=$pwdRoot/paper-$latest.jar
+newFile=$pwdRoot/$project-$latest.jar
 if [ -f "$newFile" ]
 then # if latest build number matches local build number:
-	echo "Your server is up to date using PaperMC build $latest."
+	echo "Your server is up to date using $project build $latest."
     cd $pwdRoot
 else # if .jar just downloaded doesn't exist:
-	echo "PaperMC build $latest is available. Downloading the latest server jar..."
+	echo "$project build $latest is available. Downloading the latest server jar..."
     cd $pwdRoot
-    curl -JLO https://papermc.io/api/v1/paper/$mcversion/latest/download
+    curl -JLO https://papermc.io/api/v1/$project/$mcversion/latest/download
     if [ -f "download" ];then # mis typeed server version makes a "download" json file
         echo "ERROR: You mis-typed server version. Try again. "
         rm -rf download
