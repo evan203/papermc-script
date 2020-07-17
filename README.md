@@ -14,6 +14,7 @@ If you would like to specify default values for the default minecraft version an
 and have 4GB of memory every time you run the start script:
 ```yaml
 ## Config for start.sh
-mcver: '1.16.1'
-mcram: '4'
+project: 'paper' # paper, waterfall, or travertine
+mcver: '1.16.1' # 'ask' or specified version
+mcram: '4' # 'ask' or number amount in GB
 ```
