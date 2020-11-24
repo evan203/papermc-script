@@ -78,7 +78,7 @@ fi
 
 # get latest build number of PaperMC
 cd "$tmpDir" || exit
-latest="$(curl -s https://papermc.io/api/v2/projects/"$project"/versions/"$mcversion"/ | jq '.builds' | tail -2 | head -1 | sed 's/^ *//g')" # gets latest build number from .json, removes " from output
+latest="$(curl -s https://papermc.io/api/v2/projects/"$project"/versions/"$mcversion"/ | jq -r '.builds[-1]')" # gets latest build number from .json, removes " from output
 
 ## check if local server is up to date
 newFile="$pwdRoot"/"$project"-"$mcversion"-"$latest".jar
