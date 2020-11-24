@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # +————————————————————————————————————————+
 # |   paperMC start script - by Evan203    |
-# |             version 2.2                |
-# |         Updated July 17, 2020          |
+# |             version 2.3                |
+# |         Updated Nov 24, 2020           |
 # +————————————————————————————————————————+
 #
 
@@ -28,12 +28,12 @@ function parse_yaml {
 if [ ! -x "$(command -v jq)" ] || [ ! -x "$(command -v curl)" ]; then 
     packagesNeeded='curl jq'
     echo "Dependencies curl and/or jq are not installed. Attempting to install them (requires sudo)"
-    if [ -x "$(command -v apk)" ];       then sudo apk add --no-cache $packagesNeeded
-    elif [ -x "$(command -v apt-get)" ]; then sudo apt-get install $packagesNeeded
-    elif [ -x "$(command -v dnf)" ];     then sudo dnf install $packagesNeeded
-    elif [ -x "$(command -v zypper)" ];  then sudo zypper install $packagesNeeded
-    elif [ -x "$(command -v pacman)" ];  then sudo pacman -S $packagesNeeded
-    elif [ -x "$(command -v yum)" ];  then sudo yum install epel-release -y; sudo yum install $packagesNeeded -y
+    if [ -x "$(command -v apk)" ];       then sudo apk add --no-cache "$packagesNeeded"
+    elif [ -x "$(command -v apt-get)" ]; then sudo apt-get install "$packagesNeeded"
+    elif [ -x "$(command -v dnf)" ];     then sudo dnf install "$packagesNeeded"
+    elif [ -x "$(command -v zypper)" ];  then sudo zypper install "$packagesNeeded"
+    elif [ -x "$(command -v pacman)" ];  then sudo pacman -S "$packagesNeeded"
+    elif [ -x "$(command -v yum)" ];  then sudo yum install epel-release -y; sudo yum install "$packagesNeeded" -y
     else echo "FAILED TO INSTALL PACKAGE: Package manager not found. You must manually install: $packagesNeeded"; fi
 else echo "dependencies are installed."
 fi
@@ -45,18 +45,23 @@ if [ -f "$startConfig" ]; then
     echo "$startConfig exists."
 else 
     echo "$startConfig does not exist. Creating one."
-    touch $startConfig
-    echo "## Config for start.sh"  >> $startConfig ; echo "project: 'paper'"  >> $startConfig ; echo "mcver: 'ask'" >> $startConfig ; echo "mcram: 'ask'"  >> $startConfig 
+    touch "$startConfig"
+    {
+        echo "## Config for start.sh"
+        echo project: 'paper'  
+        echo mcver: 'ask' 
+        echo mcram: 'ask' 
+    } >> "$startConfig"
 fi
 
 
 # translate start_config.yml's data into paramaters in this script
-eval $(parse_yaml start_config.yml)
+eval "$(parse_yaml start_config.yml)"
 
 
-if [ $mcver == "ask" ]; then
+if [[ "$mcver" == "ask" ]]; then
 	echo "Minecraft Version: "
-	read mcversion
+	read -r mcversion
 else
 	mcversion=$mcver
 fi
@@ -72,19 +77,19 @@ then
 fi
 
 # get latest build number of PaperMC
-cd $tmpDir
-latest="$(curl -s https://papermc.io/api/v1/$project/$mcversion/latest | jq '.build' | sed -e 's/"//g')" # gets latest build number from .json, removes " from output
+cd "$tmpDir" || exit
+latest="$(curl -s https://papermc.io/api/v2/projects/"$project"/versions/"$mcversion"/ | jq '.builds' | tail -2 | head -1 | sed 's/^ *//g')" # gets latest build number from .json, removes " from output
 
 ## check if local server is up to date
-newFile=$pwdRoot/$project-$latest.jar
+newFile="$pwdRoot"/"$project"-"$mcversion"-"$latest".jar
 if [ -f "$newFile" ]
 then # if latest build number matches local build number:
 	echo "Your server is up to date using $project build $latest."
-    cd $pwdRoot
+    cd "$pwdRoot" || exit
 else # if .jar just downloaded doesn't exist:
 	echo "$project build $latest is available. Downloading the latest server jar..."
-    cd $pwdRoot
-    curl -JLO https://papermc.io/api/v1/$project/$mcversion/latest/download
+    cd "$pwdRoot" || exit
+    curl -JLO https://papermc.io/api/v2/projects/"$project"/versions/"$mcversion"/builds/"$latest"/downloads/"$project"-"$mcversion"-"$latest".jar
     if [ -f "download" ];then # mis typeed server version makes a "download" json file
         echo "ERROR: You mis-typed server version. Try again. "
         rm -rf download
@@ -95,9 +100,9 @@ fi
 rm -rf $tmpDir
 
 # run the minecraft server
-if [ $mcram == "ask" ]; then
+if [[ "$mcram" == "ask" ]]; then
 	echo "GB of ram to allocate for server: "
-	read mem
+	read -r mem
 else
 	mem=$mcram
 fi
@@ -106,6 +111,6 @@ echo "Minecraft server is starting!"
 
 OPTS="-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true"
 
-java -Xms"$mem"G -Xmx"$mem"G $OPTS -jar $newFile
+java -Xms"$mem"G -Xmx"$mem"G "$OPTS" -jar "$newFile"
 
 # https://www.shellcheck.net/
