@@ -26,15 +26,7 @@ function parse_yaml {
 
 # check dependencies
 if [ ! -x "$(command -v jq)" ] || [ ! -x "$(command -v curl)" ]; then 
-    packagesNeeded='curl jq'
-    echo "Dependencies curl and/or jq are not installed. Attempting to install them (requires sudo)"
-    if [ -x "$(command -v apk)" ];       then sudo apk add --no-cache "$packagesNeeded"
-    elif [ -x "$(command -v apt-get)" ]; then sudo apt-get install "$packagesNeeded"
-    elif [ -x "$(command -v dnf)" ];     then sudo dnf install "$packagesNeeded"
-    elif [ -x "$(command -v zypper)" ];  then sudo zypper install "$packagesNeeded"
-    elif [ -x "$(command -v pacman)" ];  then sudo pacman -S "$packagesNeeded"
-    elif [ -x "$(command -v yum)" ];  then sudo yum install epel-release -y; sudo yum install "$packagesNeeded" -y
-    else echo "FAILED TO INSTALL PACKAGE: Package manager not found. You must manually install: $packagesNeeded"; fi
+    echo "Dependencies curl and jq are not installed. Please install them with your package manager"
 else echo "dependencies are installed."
 fi
 
