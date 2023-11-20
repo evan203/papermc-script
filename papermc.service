@@ -1,0 +1,13 @@
+[Unit]
+Description=Start tmux session for PaperMC server
+
+[Service]
+Type=forking
+User=evan
+WorkingDirectory=/home/evan/Documents/minecraft
+ExecStart=/usr/bin/tmux new-session -d -s papermc -c /home/evan/Documents/minecraft /home/evan/Documents/minecraft/start.sh
+ExecStop=/usr/bin/tmux kill-session -t papermc
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
